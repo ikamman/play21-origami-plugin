@@ -26,14 +26,7 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.persistence.Id;
 import javax.persistence.Transient;
@@ -73,9 +66,12 @@ final public class OrigamiPlugin extends Plugin {
 	public static final Map<String, Class<?>> graphEntityMap = new HashMap<String, Class<?>>();
 	private static final String ORIENTDB_WWW_PATH = "orientdb.www.path";
 
+
+
 	public static String url;
 	public static String user;
 	public static String passwd;
+    public static List<String> models;
 
 	final private Application application;
 	private static OServer server;
@@ -146,6 +142,11 @@ final public class OrigamiPlugin extends Plugin {
 		url = c.getString(CONF_ORIENT_DB_URL, "memory:temp");
 		user = c.getString(CONF_ORIENT_DB_USER, "admin");
 		passwd = c.getString(CONF_ORIENT_DB_PASSWORD, "admin");
+        models = c.getStringList(CONF_ORIENT_DB_MODELS, new ArrayList<String>() {
+            {
+                add("models");
+            }
+        });
 	}
 
 	private static void runEmbeddedOrientDB() {
@@ -203,9 +204,14 @@ final public class OrigamiPlugin extends Plugin {
 		try {
 			debug("Registering Graph Classes");
 
-			final Set<Class<GraphVertexModel>> vertexClasses = getSubTypesOf("models", GraphVertexModel.class);
-			@SuppressWarnings("rawtypes")
-			final Set<Class<GraphEdgeModel>> edgeClasses = getSubTypesOf("models", GraphEdgeModel.class);
+            final Set<Class<GraphVertexModel>> vertexClasses = new HashSet<Class<GraphVertexModel>>();
+            final Set<Class<GraphEdgeModel>> edgeClasses = new HashSet<Class<GraphEdgeModel>>();
+
+            for (String pkg: models) {
+                vertexClasses.addAll(getSubTypesOf(pkg, GraphVertexModel.class));
+                edgeClasses.addAll(getSubTypesOf(pkg, GraphEdgeModel.class));
+            }
+
 			@SuppressWarnings("unchecked")
 			final Collection<Class<?>> javaClasses = CollectionUtils.union(vertexClasses, edgeClasses);
 

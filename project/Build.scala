@@ -5,7 +5,7 @@ import play.Project._
 object ApplicationBuild extends Build {
 
   val appName         = "play21-origami-plugin"
-  val appVersion      = "1.1.4"
+  val appVersion      = "1.1.4.1"
   val orientDBVersion = "1.4.1"
 
   val appDependencies = Seq(  
